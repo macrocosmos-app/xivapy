@@ -1,2 +1,2 @@
 def main() -> None:
-    print("Hello from xivapy!")
+    print('Hello from xivapy!')

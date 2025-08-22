@@ -16,6 +16,7 @@ from xivapy.query import QueryBuilder
 from xivapy.types import Format
 from xivapy.exceptions import XIVAPIHTTPError, XIVAPINotFoundError, ModelValidationError
 
+
 @dataclass
 class SearchResult[T]:
     score: float
@@ -92,7 +93,11 @@ class Client:
 
             return version_names
         except httpx.HTTPStatusError as e:
-            raise XIVAPIHTTPError(f'Failed to get versions: {e}', status_code=e.response.status_code, response=e.response)
+            raise XIVAPIHTTPError(
+                f'Failed to get versions: {e}',
+                status_code=e.response.status_code,
+                response=e.response,
+            )
 
     async def info(self, name: str) -> dict:
         raise NotImplementedError
@@ -123,7 +128,11 @@ class Client:
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
                 raise XIVAPINotFoundError('map', f'{territory}/{index}')
-            raise XIVAPIHTTPError(f'Failed to get map {territory}/{index}: {e}', status_code=e.response.status_code, response=e.response)
+            raise XIVAPIHTTPError(
+                f'Failed to get map {territory}/{index}: {e}',
+                status_code=e.response.status_code,
+                response=e.response,
+            )
 
     async def sheets(self, version: Optional[str] = None) -> list[str]:
         params = {}
@@ -146,7 +155,11 @@ class Client:
 
             return sheets
         except httpx.HTTPStatusError as e:
-            raise XIVAPIHTTPError(f'Failed to get sheets: {e}', status_code=e.response.status_code, response=e.response)
+            raise XIVAPIHTTPError(
+                f'Failed to get sheets: {e}',
+                status_code=e.response.status_code,
+                response=e.response,
+            )
 
     @overload
     def search[T: Model](
@@ -271,7 +284,11 @@ class Client:
                 if not cursor:
                     break
             except httpx.HTTPStatusError as e:
-                raise XIVAPIHTTPError(f'Search failed: {e}', status_code=e.response.status_code, response=e.response)
+                raise XIVAPIHTTPError(
+                    f'Search failed: {e}',
+                    status_code=e.response.status_code,
+                    response=e.response,
+                )
 
     async def asset(
         self, path: str, format: Format = 'png', version: Optional[str] = None
@@ -293,7 +310,11 @@ class Client:
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
                 raise XIVAPINotFoundError('asset', path)
-            raise XIVAPIHTTPError(f'Failed to get asset {path}: {e}', status_code=e.response.status_code, response=e.response)
+            raise XIVAPIHTTPError(
+                f'Failed to get asset {path}: {e}',
+                status_code=e.response.status_code,
+                response=e.response,
+            )
 
     async def icon(
         self, icon_id: int, format: Format = 'jpg', version: Optional[str] = None
@@ -354,8 +375,14 @@ class Client:
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
-                raise XIVAPINotFoundError('sheet row', f'{model_class.get_sheet_name()}/{row}')
-            raise XIVAPIHTTPError(f'Failed to get sheet rows for {model_class.get_sheet_name()}: {e}', status_code=e.response.status_code, response=e.response)
+                raise XIVAPINotFoundError(
+                    'sheet row', f'{model_class.get_sheet_name()}/{row}'
+                )
+            raise XIVAPIHTTPError(
+                f'Failed to get sheet rows for {model_class.get_sheet_name()}: {e}',
+                status_code=e.response.status_code,
+                response=e.response,
+            )
 
         data = response.json()
         if not data or 'row_id' not in data:
@@ -379,8 +406,8 @@ class Client:
 
         if hasattr(rows, '__aiter__'):
             # https://github.com/vxgmichel/aiostream/issues/105
-            async with chunks(rows, self.batch_size).stream() as streamer:  # type: ignore[arg-type, var-annotated]
-                async for batch in streamer:  # type: ignore[misc]
+            async with chunks(rows, self.batch_size).stream() as streamer:  # type: ignore[arg-type]
+                async for batch in streamer:
                     batch_seq = cast(Sequence[int], batch)
                     async for item in self._process_batch(
                         model_class, batch_seq, **params
@@ -416,4 +443,6 @@ class Client:
                 except ValidationError as e:
                     raise ModelValidationError(model_class, e, processed_data)
         except httpx.HTTPStatusError as e:
-            raise XIVAPIHTTPError('', status_code=e.response.status_code, response=e.response)
+            raise XIVAPIHTTPError(
+                '', status_code=e.response.status_code, response=e.response
+            )

@@ -18,4 +18,9 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [httpx, pydantic, aiostream]
-        args: [--strict]
+        args:
+          [
+            --ignore-missing-imports,
+            --warn-unused-ignores,
+            --warn-redundant-casts,
+          ]

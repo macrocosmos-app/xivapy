@@ -17,6 +17,9 @@ xivapy = "xivapy:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.ruff.format]
+quote-style = "single"
+
 [tool.pyright]
 venvPath = "."
 venv = ".venv"

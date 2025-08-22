@@ -15,7 +15,9 @@ class XIVAPIError(Exception):
 class XIVAPIHTTPError(XIVAPIError):
     """HTTP-related errors when communicating with XIVAPI."""
 
-    def __init__(self, message: str, status_code: int, response: Optional[httpx.Response] = None) -> None:
+    def __init__(
+        self, message: str, status_code: int, response: Optional[httpx.Response] = None
+    ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.response = response
@@ -36,7 +38,12 @@ class XIVAPINotFoundError(XIVAPIHTTPError):
 class ModelValidationError(XIVAPIError):
     """Raised when API response data doesn't validate against the model schema."""
 
-    def __init__(self, model_class: type, validation_error: ValidationError, raw_data: Optional[dict] = None) -> None:
+    def __init__(
+        self,
+        model_class: type,
+        validation_error: ValidationError,
+        raw_data: Optional[dict] = None,
+    ) -> None:
         message = f'Failed to validate data for model {model_class.__name__}: {validation_error}'
         super().__init__(message)
         self.model_class = model_class
