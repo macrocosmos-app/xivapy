@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Self, Any
 from dataclasses import dataclass
 
+from xivapy.exceptions import QueryBuildError
+
 
 @dataclass
 class Query:
@@ -13,7 +15,8 @@ class Query:
     excluded: bool = False
 
     def __str__(self) -> str:
-        # TODO: complain if both are set to True
+        if self.required and self.excluded:
+            raise QueryBuildError('Query cannot be set to both required and excluded')
         if self.required:
             prefix = '+'
         elif self.excluded:
