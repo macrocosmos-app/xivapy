@@ -16,6 +16,8 @@ from xivapy.query import QueryBuilder
 from xivapy.types import Format
 from xivapy.exceptions import XIVAPIHTTPError, XIVAPINotFoundError, ModelValidationError
 
+__all__ = ['Client', 'SearchResult']
+
 
 @dataclass
 class SearchResult[T]:

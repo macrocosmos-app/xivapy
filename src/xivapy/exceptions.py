@@ -3,6 +3,14 @@ from typing import Optional, Any
 import httpx
 from pydantic import ValidationError
 
+__all__ = [
+    'XIVAPIError',
+    'XIVAPIHTTPError',
+    'XIVAPINotFoundError',
+    'ModelValidationError',
+    'QueryBuildError',
+]
+
 
 class XIVAPIError(Exception):
     """Base exception for all xivapy-related errors."""

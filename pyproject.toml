@@ -1,17 +1,33 @@
 [project]
 name = "xivapy"
 version = "0.1.0"
-description = "Add your description here"
+description = "Async Python client for XIVAPI for Final Fantasy XIV"
 readme = "README.md"
 requires-python = ">=3.13.2"
+license = {text = "MIT"}
+authors = [
+    {name = "Oowazu Nonowazu", email = "oowazu.nonowazu@gmail.com"}
+]
+keywords = ["ffxiv", "xiv", "api", "xivapi", "async"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Games/Entertainment",
+    "Framework :: AsyncIO"
+]
 dependencies = [
     "aiostream>=0.7.0",
     "httpx>=0.28.1",
     "pydantic>=2.11.7",
 ]
 
-[project.scripts]
-xivapy = "xivapy:main"
+[project.urls]
+Homepage = "https://github.com/macrocosmos-app/xivapy"
+Repository = "https://github.com/macrocosmos-app/xivapy"
+Issues = "https://github.com/macrocosmos-app/xivapy/issues"
+Documentation = "https://github.com/macrocosmos-app/xivapy#readme"
 
 [build-system]
 requires = ["hatchling"]

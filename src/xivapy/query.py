@@ -5,6 +5,12 @@ from dataclasses import dataclass
 
 from xivapy.exceptions import QueryBuildError
 
+__all__ = [
+    'Query',
+    'QueryBuilder',
+    'Group',
+]
+
 
 @dataclass
 class Query:

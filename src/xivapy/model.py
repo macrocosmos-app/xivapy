@@ -3,6 +3,11 @@ from dataclasses import dataclass
 
 from pydantic import BaseModel, model_validator
 
+__all__ = [
+    'Model',
+    'FieldMapping',
+]
+
 
 @dataclass
 class FieldMapping:
