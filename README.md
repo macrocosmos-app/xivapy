@@ -24,19 +24,20 @@ import typing
 from pydantic import Field
 import xivapy
 
-# Custom mapping to a dictionary language support
-class I18nDict(typing.TypedDict, total=False):
-    en: str
-    de: str
-    fr: str
-    ja: str
-
 class ContentFinderCondition(xivapy.Model):
     # Custom map a python field to an xivapi field name
     id: int = Field(alias='row_id')
     # compress language fields into a dictionary for easy viewing
     # for this, however, you'll need to set up a default dict for it to use
-    name: Annotated[I18nDict, xivapy.FieldMapping('Name', languages=['en', 'de', 'fr', 'ja'])] = Field(default_factory=lambda: I18nDict.copy())
+    # The output of this is:
+    # {
+    #   'en': "The Protector and the Destroyer",
+    #   'de': "Schützer des Volkes, Schlächter des Volkes",
+    #   'fr': "Protecteurs et destructeurs",
+    #   'ja': "護る者、壊す者"
+    # }
+    # Optional languages will be omitted
+    name: Annotated[xivapy.LangDict, xivapy.FieldMapping('Name', languages=['en', 'de', 'fr', 'ja'])] = Field(default_factory=lambda: xivapy.LangDict.copy())
     # get a deeply nested (and optional) field lifted up into a top-level field
     bgm_file: Annotated[str | None, xivapy.FieldMapping('Content.BGM.File')] = None
     # by default, the sheet to be searched will be the name of the model

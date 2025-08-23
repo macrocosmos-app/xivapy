@@ -15,6 +15,7 @@ from xivapy.model import Model
 from xivapy.query import QueryBuilder
 from xivapy.types import Format
 from xivapy.exceptions import XIVAPIHTTPError, XIVAPINotFoundError, ModelValidationError
+from xivapy.version import VERSION
 
 __all__ = ['Client', 'SearchResult']
 
@@ -43,7 +44,8 @@ class Client:
             base_url=base_url,
             timeout=30.0,
             transport=transport,
-            headers={'User-Agent': 'xivapi/alpha'},
+            # TODO: let people set their own UA for this
+            headers={'User-Agent': f'xivapi/{VERSION}'},
             limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
         )
         self.game_version = game_version
@@ -407,8 +409,9 @@ class Client:
             params['fields'] = model_class.get_fields_str()
 
         if hasattr(rows, '__aiter__'):
+            # mypy can't resolve aiostream types correctly in some cases - see upstream issue:
             # https://github.com/vxgmichel/aiostream/issues/105
-            async with chunks(rows, self.batch_size).stream() as streamer:  # type: ignore[arg-type]
+            async with chunks(rows, self.batch_size).stream() as streamer:  # type: ignore[arg-type,var-annotated]
                 async for batch in streamer:
                     batch_seq = cast(Sequence[int], batch)
                     async for item in self._process_batch(
