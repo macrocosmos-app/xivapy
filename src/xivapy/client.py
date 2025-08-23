@@ -79,7 +79,7 @@ class Client:
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         await self._client.aclose()
 
-    async def patch(self, version: str) -> None:
+    def patch(self, version: str) -> None:
         """Sets the version for all endpoints to the version provided"""
         self.game_version = version
 
@@ -294,6 +294,8 @@ class Client:
                     response=e.response,
                 )
 
+    # TODO: consider if we need to raise a not found error, or just return None
+    # exceptions for 'standard' control flow doesn't feel user friendly
     async def asset(
         self, path: str, format: Format = 'png', version: Optional[str] = None
     ) -> Optional[bytes]:
