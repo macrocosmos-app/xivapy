@@ -1,3 +1,5 @@
+"""Tests related to xivapy.Client."""
+
 from pytest_httpx import HTTPXMock
 import pytest
 
@@ -6,18 +8,21 @@ from xivapy.exceptions import XIVAPIHTTPError, XIVAPINotFoundError
 
 
 async def test_client_close():
+    """Test that the client closes without exception."""
     client = Client()
     # No exception is essentially good
     await client.close()
 
 
 def test_setting_patch():
+    """Test setting patch as part of the client."""
     client = Client()
     client.patch('7.21')
     assert client.game_version == '7.21'
 
 
 def test_flatten_item_data():
+    """Test flattening api response data."""
     client = Client()
     data = {'row_id': 123, 'fields': {'Name': 'Foo'}}
     result = client._flatten_item_data(data)
@@ -64,7 +69,7 @@ async def test_sheets_success(httpx_mock: HTTPXMock):
 
 
 async def test_sheets_http_error(httpx_mock: HTTPXMock):
-    """Test sheets endpoint with bad response"""
+    """Test sheets endpoint with bad response."""
     httpx_mock.add_response(
         url='https://v2.xivapi.com/api/sheet?version=latest',
         status_code=500,
@@ -77,7 +82,7 @@ async def test_sheets_http_error(httpx_mock: HTTPXMock):
 
 
 async def test_map_success(httpx_mock: HTTPXMock):
-    """Test map endpoint with valid territory and index format"""
+    """Test map endpoint with valid territory and index format."""
     httpx_mock.add_response(
         url='https://v2.xivapi.com/api/asset/map/a1b2/00?version=latest',
         content=b'abadlydrawnmapwithcrayonthatsnotevenajpg',
@@ -105,7 +110,7 @@ async def test_map_invalid_index():
 
 
 async def test_asset_success(httpx_mock: HTTPXMock):
-    """Test asset with good response"""
+    """Test asset with good response."""
     httpx_mock.add_response(
         url='https://v2.xivapi.com/api/asset?path=ui/icon/ultima.tex&format=png&version=latest',
         content=b'asparklerthathealstheenemy',
@@ -117,7 +122,7 @@ async def test_asset_success(httpx_mock: HTTPXMock):
 
 
 async def test_asset_http_error(httpx_mock: HTTPXMock):
-    """Test asset endpoint with bad response"""
+    """Test asset endpoint with bad response."""
     httpx_mock.add_response(
         url='https://v2.xivapi.com/api/asset?path=ui/icon/solution.tex&format=png&version=latest',
         status_code=500,
@@ -130,12 +135,12 @@ async def test_asset_http_error(httpx_mock: HTTPXMock):
 
 
 async def test_asset_none_found(httpx_mock: HTTPXMock):
-    """Test asset endpoint where it isn't found"""
+    """Test asset endpoint where it isn't found."""
     httpx_mock.add_response(
         url='https://v2.xivapi.com/api/asset?path=ui/icon/selene.tex&format=png&version=latest',
         status_code=404,
     )
 
     async with Client() as client:
-        with pytest.raises(XIVAPINotFoundError, match='Resource not found'):
-            await client.asset(path='ui/icon/selene.tex', format='png')
+        asset = await client.asset(path='ui/icon/selene.tex', format='png')
+        assert asset == None
