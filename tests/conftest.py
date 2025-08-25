@@ -1,3 +1,5 @@
+# ruff: noqa: D100, D101, D103
+
 import pytest
 
 from xivapy.client import Client
