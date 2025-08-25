@@ -1,3 +1,5 @@
+"""xivapy, an async Python client for XIVAPI for Final Fantasy XIV."""
+
 from xivapy.client import Client, SearchResult
 from xivapy.query import Query, QueryBuilder, Group
 from xivapy.model import FieldMapping, Model

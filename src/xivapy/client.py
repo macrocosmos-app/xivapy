@@ -16,7 +16,7 @@ from pydantic import ValidationError
 from xivapy.model import Model
 from xivapy.query import QueryBuilder
 from xivapy.types import Format
-from xivapy.exceptions import XIVAPIHTTPError, XIVAPINotFoundError, ModelValidationError
+from xivapy.exceptions import XIVAPIHTTPError, ModelValidationError
 from xivapy.version import VERSION
 
 __all__ = ['Client', 'SearchResult']
