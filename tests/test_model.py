@@ -31,7 +31,7 @@ def test_basic_model_validation():
         name: str
         level: int = 0
 
-    data = {'row_id': 1, 'Name': 'Test', 'Level': 50}
+    data = {'row_id': 1, 'name': 'Test', 'level': 50}
     model = SimpleModel.model_validate(data)
 
     assert model.row_id == 1
