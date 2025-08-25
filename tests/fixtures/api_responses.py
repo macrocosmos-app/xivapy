@@ -1,3 +1,5 @@
+"""Various fixture responses."""
+
 VERSIONS_RESPONSE = {
     'versions': [
         {'names': ['7.3x1']},
