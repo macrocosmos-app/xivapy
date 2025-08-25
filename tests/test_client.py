@@ -4,7 +4,7 @@ from pytest_httpx import HTTPXMock
 import pytest
 
 from xivapy.client import Client
-from xivapy.exceptions import XIVAPIHTTPError, XIVAPINotFoundError
+from xivapy.exceptions import XIVAPIHTTPError
 
 
 async def test_client_close():
