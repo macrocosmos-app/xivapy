@@ -330,10 +330,10 @@ class Client:
                         row_id=result['row_id'],
                         data=model_instance,
                     )
-                # Are there more pages?
-                cursor = data.get('next')
-                if not cursor:
-                    break
+            # Are there more pages?
+            cursor = data.get('next')
+            if not cursor:
+                break
 
     async def asset(
         self, path: str, format: Format = 'png', version: Optional[str] = None
