@@ -1,3 +1,5 @@
+"""xivapy Model-related classes."""
+
 from typing import Optional, Any
 from dataclasses import dataclass
 
@@ -11,7 +13,7 @@ __all__ = [
 
 @dataclass
 class FieldMapping:
-    """Map a single model field to multiple XIVAPI fields"""
+    """Map a single model field to multiple XIVAPI fields."""
 
     base_field: str
     languages: Optional[list[str]] = None
@@ -20,6 +22,7 @@ class FieldMapping:
     custom_spec: Optional[str] = None
 
     def to_field_specs(self) -> list[str]:
+        """Transforms a Model field into an xivapi-understood field."""
         if self.custom_spec:
             return [self.custom_spec]
 
@@ -38,22 +41,27 @@ class FieldMapping:
 
 
 class Model(BaseModel):
+    """Base model for all xivapy queries."""
+
     __sheetname__: Optional[str] = None
 
     model_config = {'populate_by_name': True}
 
     @classmethod
     def get_sheet_name(cls) -> str:
+        """Returns the sheet name, defaulting to the class name if __sheetname__ not set."""
         if cls.__sheetname__:
             return cls.__sheetname__
         return cls.__name__
 
     @classmethod
     def get_fields_str(cls) -> str:
+        """Returns all model fields as a comma-separated string list for XIVAPI queries."""
         return ','.join(cls.get_xivapi_fields())
 
     @classmethod
     def _get_field_mapping(cls, field_info) -> Optional[FieldMapping]:
+        """Gets the xivapy-specific metadata for a field, if one is defined."""
         if hasattr(field_info, 'metadata') and field_info.metadata:
             for metadata in field_info.metadata:
                 if isinstance(metadata, FieldMapping):
@@ -62,6 +70,7 @@ class Model(BaseModel):
 
     @classmethod
     def get_xivapi_fields(cls) -> set[str]:
+        """Get a set of all defined field names."""
         fields = set()
 
         for field_name, field_info in cls.model_fields.items():
@@ -117,6 +126,7 @@ class Model(BaseModel):
 
     @classmethod
     def _extract_nested_field(cls, data: dict, field_path: str) -> Any:
+        """Extract nested field data from xivapi response using dot notation (e.g., 'ContentType.Name')."""
         parts = field_path.split('.')
         current = data
 
@@ -142,6 +152,7 @@ class Model(BaseModel):
     @model_validator(mode='before')
     @classmethod
     def process_xivapi_response(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Model validator that processes xivapi-specific response data for pydantic validation."""
         if not isinstance(data, dict):
             return data
 
@@ -151,18 +162,3 @@ class Model(BaseModel):
                 data = cls._process_mapped_field(data, field_name, mapping)
 
         return data
-
-
-# class ContentFinderCondition(Model):
-#     id: int = Field(alias='row_id')
-#     name: Annotated[I18nDict, FieldMapping('Name', ['en', 'de', 'fr', 'ja'])] = (
-#         Field(default_factory=lambda: I18nDictDefault.copy())
-#     )
-#     category_id: Annotated[int, FieldMapping('ContentUICategory', raw=True)]
-
-
-# class ContentUICategory(Model):
-#     id: int = Field(alias='row_id')
-#     name: Annotated[I18nDict, FieldMapping('Name', ['en', 'de', 'fr', 'ja'])] = (
-#         Field(default_factory=lambda: I18nDictDefault.copy())
-#     )

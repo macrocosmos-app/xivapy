@@ -5,9 +5,9 @@ from pytest_httpx import HTTPXMock
 import httpx
 import pytest
 
-from xivapy.client import Client, SearchResult
+from xivapy.client import Client
 from xivapy.model import Model
-from xivapy.exceptions import XIVAPIHTTPError, XIVAPINotFoundError
+from xivapy.exceptions import XIVAPIHTTPError
 
 from tests.fixtures.api_responses import (
     BASIC_SEARCH_RESPONSE,
