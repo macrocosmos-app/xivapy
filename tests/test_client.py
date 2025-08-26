@@ -5,7 +5,7 @@ from pytest_httpx import HTTPXMock
 import httpx
 import pytest
 
-from xivapy.client import Client
+from xivapy.client import Client, SearchResult
 from xivapy.model import Model
 from xivapy.exceptions import XIVAPIHTTPError
 
