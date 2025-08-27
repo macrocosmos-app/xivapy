@@ -1,5 +1,7 @@
 ---
 site_name: xivapy
+site_url: https://macrocosmos-app.github.io/xivapy/
+repo_url: https://github.com/macrocosmos-app/xivapy
 nav:
   - Home: index.md
   - API Reference:
