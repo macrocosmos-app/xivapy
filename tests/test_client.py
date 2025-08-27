@@ -1,10 +1,23 @@
 """Tests related to xivapy.Client."""
 
+from typing import Annotated
 from pytest_httpx import HTTPXMock
+import httpx
 import pytest
 
-from xivapy.client import Client
+from xivapy.client import Client, SearchResult
+from xivapy.model import Model
 from xivapy.exceptions import XIVAPIHTTPError
+
+from tests.fixtures.api_responses import (
+    BASIC_SEARCH_RESPONSE,
+    SEARCH_RESPONSE_PAGE_1,
+    SEARCH_RESPONSE_PAGE_2,
+    VERSIONS_RESPONSE,
+    SHEETS_RESPONSE,
+    SHEET_ROW_RESPONSE,
+)
+from xivapy.model import FieldMapping
 
 
 async def test_client_close():
@@ -33,13 +46,13 @@ async def test_versions_success(httpx_mock: HTTPXMock):
     """Test version endpoint with good response."""
     httpx_mock.add_response(
         url='https://v2.xivapi.com/api/version',
-        json={'versions': [{'names': ['latest']}, {'names': ['7.3x1']}]},
+        json=VERSIONS_RESPONSE,
     )
 
     async with Client() as client:
         versions = await client.versions()
-        assert 'latest' in versions
         assert '7.3x1' in versions
+        assert 'latest' in versions
 
 
 async def test_versions_http_error(httpx_mock: HTTPXMock):
@@ -59,13 +72,14 @@ async def test_sheets_success(httpx_mock: HTTPXMock):
     """Test sheets endpoint with good response."""
     httpx_mock.add_response(
         url='https://v2.xivapi.com/api/sheet?version=latest',
-        json={'sheets': [{'name': 'Item'}, {'name': 'ContentUICondition'}]},
+        json=SHEETS_RESPONSE,
     )
 
     async with Client() as client:
         sheets = await client.sheets()
         assert 'Item' in sheets
-        assert 'ContentUICondition' in sheets
+        assert 'ContentFinderCondition' in sheets
+        assert 'Quest' in sheets
 
 
 async def test_sheets_http_error(httpx_mock: HTTPXMock):
@@ -144,3 +158,93 @@ async def test_asset_none_found(httpx_mock: HTTPXMock):
     async with Client() as client:
         asset = await client.asset(path='ui/icon/selene.tex', format='png')
         assert asset == None
+
+
+async def test_search_success(httpx_mock: HTTPXMock):
+    """Test searching something where it's a single result."""
+
+    class TestSheet(Model):
+        id: Annotated[int, FieldMapping('row_id')]
+        name: Annotated[str, FieldMapping('Name')]
+        level: Annotated[int, FieldMapping('Level')]
+
+    expected_fields = TestSheet.get_fields_str()
+    httpx_mock.add_response(
+        url=httpx.URL(
+            'https://v2.xivapi.com/api/search',
+            params={
+                'sheets': 'TestSheet',
+                'query': '+Name="Test Item" +Level=50',
+                'fields': expected_fields,
+                'version': 'latest',
+            },
+        ),
+        json=BASIC_SEARCH_RESPONSE,
+    )
+
+    client = Client()
+
+    res_iter = aiter(client.search(TestSheet, query='+Name="Test Item" +Level=50'))
+
+    item = await anext(res_iter)
+    assert isinstance(item, SearchResult)
+    assert item.score == pytest.approx(1.0)
+    assert item.sheet == 'TestSheet'
+    assert isinstance(item.data, TestSheet)
+    assert item.data.id == 1
+    assert item.data.name == 'Test Item'
+    assert item.data.level == 50
+
+
+# @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
+async def test_paginated_search_success(httpx_mock: HTTPXMock):
+    """Test getting multiple pages from the search endpoint with a cursor."""
+
+    class TestSheet(Model):
+        id: Annotated[int, FieldMapping('row_id')]
+        name: Annotated[str, FieldMapping('Name')]
+        level: Annotated[int, FieldMapping('Level')]
+
+    expected_fields = TestSheet.get_fields_str()
+
+    httpx_mock.add_response(
+        url=httpx.URL(
+            'https://v2.xivapi.com/api/search',
+            params={
+                'sheets': 'TestSheet',
+                'query': 'Name~"Test Item" Level=50',
+                'fields': expected_fields,
+                'version': 'latest',
+            },
+        ),
+        json=SEARCH_RESPONSE_PAGE_1,
+    )
+    httpx_mock.add_response(
+        url=httpx.URL(
+            'https://v2.xivapi.com/api/search',
+            params={
+                'sheets': 'TestSheet',
+                'cursor': '28433b5b-7860-4395-88df-17c75c173a7c',
+                'fields': expected_fields,
+                'version': 'latest',
+            },
+        ),
+        json=SEARCH_RESPONSE_PAGE_2,
+    )
+
+    client = Client()
+
+    req_iter = aiter(client.search(TestSheet, query='Name~"Test Item" Level=50'))
+
+    item = await anext(req_iter)
+    assert isinstance(item, SearchResult)
+    assert item.data.name == 'Test Item'
+    assert item.data.level == 89
+
+    item = await anext(req_iter)
+    assert isinstance(item, SearchResult)
+    assert item.data.name == 'Another Test Item'
+    assert item.data.level == 50
+
+    with pytest.raises(StopAsyncIteration):
+        await anext(req_iter)
