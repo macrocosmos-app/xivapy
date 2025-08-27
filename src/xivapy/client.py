@@ -46,12 +46,14 @@ class Client:
         batch_size: For the sheets endpoint, it will fetch in batches of that size
 
     Example:
-        >>> class Item(xivapy.Model):
-        ...    id: Annotated[int, xivapy.FieldMapping('row_id')]
-        >>> client = xivapy.Client()
-        >>> item = await client.sheet(Item, row=123)
-        >>> print(item)
-        >>> await client.close()
+        ```python
+        class Item(xivapy.Model):
+            id: Annotated[int, xivapy.FieldMapping('row_id')]
+        client = xivapy.Client()
+        item = await client.sheet(Item, row=123)
+        print(item)
+        await client.close()
+        ```
     """
 
     def __init__(
