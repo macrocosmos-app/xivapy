@@ -44,11 +44,11 @@ def test_get_xivapi_fields_basic():
 
     class BasicModel(Model):
         row_id: int
-        name: str
+        Name: str
         level: int
 
     fields = BasicModel.get_xivapi_fields()
-    expected = {'Row_Id', 'Name', 'Level'}
+    expected = {'row_id', 'Name', 'level'}
     assert fields == expected
 
 
@@ -60,7 +60,7 @@ def test_get_xivapi_fields_with_override():
         name: str
 
     fields = BasicModel.get_xivapi_fields()
-    expected = {'row_id', 'Name'}
+    expected = {'row_id', 'name'}
     assert fields == expected
 
 
