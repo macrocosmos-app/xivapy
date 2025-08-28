@@ -1,13 +1,11 @@
 [project]
 name = "xivapy"
-version = "0.1.0"
+version = "0.2.0"
 description = "Async Python client for XIVAPI for Final Fantasy XIV"
 readme = "README.md"
 requires-python = ">=3.13.2"
-license = {text = "MIT"}
-authors = [
-    {name = "Oowazu Nonowazu", email = "oowazu.nonowazu@gmail.com"}
-]
+license = { text = "MIT" }
+authors = [{ name = "Oowazu Nonowazu", email = "oowazu.nonowazu@gmail.com" }]
 keywords = ["ffxiv", "xiv", "api", "xivapi", "async"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -15,13 +13,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.13",
     "Topic :: Games/Entertainment",
-    "Framework :: AsyncIO"
+    "Framework :: AsyncIO",
 ]
-dependencies = [
-    "aiostream>=0.7.0",
-    "httpx>=0.28.1",
-    "pydantic>=2.11.7",
-]
+dependencies = ["aiostream>=0.7.0", "httpx>=0.28.1", "pydantic>=2.11.7"]
 
 [project.urls]
 Homepage = "https://github.com/macrocosmos-app/xivapy"
@@ -47,16 +41,11 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = [
-    "--strict-markers",
-    "--strict-config",
-    "--asyncio-mode=auto",
-    "-v"
-]
+addopts = ["--strict-markers", "--strict-config", "--asyncio-mode=auto", "-v"]
 markers = [
     "slow: marks tests as slow",
     "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests"
+    "unit: marks tests as unit tests",
 ]
 
 [tool.coverage.run]

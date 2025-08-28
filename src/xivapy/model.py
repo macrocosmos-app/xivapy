@@ -74,7 +74,7 @@ class Model(BaseModel):
         fields = set()
 
         for field_name, field_info in cls.model_fields.items():
-            default_field = field_info.alias or field_name.title()
+            default_field = field_info.alias or field_name
             mapping = cls._get_field_mapping(field_info)
 
             if mapping:
