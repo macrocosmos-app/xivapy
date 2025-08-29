@@ -245,15 +245,18 @@ class Client:
             AsyncIterator yielding SearchResult objects with data typed against your model_spec
 
         Example:
-            >>> class ContentFinderCondition(Model):
-            ...     name: Annotated[str, ExtraFieldMapping('Name')]
-            ...     content_type: Annotated[str, ExtraFieldMapping('ContentType.Name')]
-            ...
-            >>> async for result in client.search(ContentFinderCondition, 'ContentType.Name="Trials"'):
-            ...     print(f'{result.data.name} - {result.data.content_type}') # IDE knows this is ContentFinderCondition
-            >>> query = QueryBuilder().where(ItemLevelRequired=690).contains(Name='extreme')
-            >>> async for result in client.search(ContentFinderCondition, query):
-            ...     # result.data is still properly typed
+            ```python
+            class ContentFinderCondition(Model):
+                name: Annotated[str, FieldMapping('Name')]
+                content_type: Annotated[str, FieldMapping('ContentType.Name')]
+
+            async for result in client.search(ContentFinderCondition, 'ContentType.Name="Trials"'):
+                print(f'{result.data.name} - {result.data.content_type}')
+
+            query = QueryBuilder().where(ItemLevelRequired=690).contains(Name='extreme')
+            async for result in client.search(ContentFinderCondition, query):
+                # result.data is still properly typed
+            ```
         """
         return self._search_impl(model_spec, query, **params)
 

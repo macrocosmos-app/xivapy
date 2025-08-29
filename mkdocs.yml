@@ -51,10 +51,12 @@ plugins:
             signature_crossrefs: true
             separate_signature: true
 markdown_extensions:
+  - admonition
   - pymdownx.highlight:
       pygments_lang_class: true
   - pymdownx.superfences
   - toc:
       permalink: true
+      toc_depth: 3
   - admonition
   - pymdownx.details
