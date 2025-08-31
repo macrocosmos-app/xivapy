@@ -61,6 +61,14 @@ def test_or_any_with_query_builder():
     assert query.build() == 'Name~"the" (Name~"extreme" Name~"savage")'
 
 
+def test_bool_values_serialize_correctly():
+    """Test that bool values in a query correctly serialize to their lowercase forms."""
+    query = QueryBuilder().where(One=True, Two=False).build()
+
+    assert 'One=true' in query
+    assert 'Two=false' in query
+
+
 def test_required_exclude_on_same_query():
     """Test making a query as required and excluded."""
     with pytest.raises(QueryBuildError):
