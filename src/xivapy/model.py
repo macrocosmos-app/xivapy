@@ -95,23 +95,23 @@ class Model(BaseModel):
             for lang in mapping.languages:
                 field_key = f'{mapping.base_field}@lang({lang})'
                 if field_key in data:
-                    lang_dict[lang] = data.pop(field_key)
+                    lang_dict[lang] = data[field_key]
             if lang_dict:
                 data[model_field] = lang_dict
 
         elif mapping.raw:
             field_key = f'{mapping.base_field}@as(raw)'
             if field_key in data:
-                data[model_field] = data.pop(field_key)
+                data[model_field] = data[field_key]
 
         elif mapping.html:
             field_key = f'{mapping.base_field}@as(html)'
             if field_key in data:
-                data[model_field] = data.pop(field_key)
+                data[model_field] = data[field_key]
 
         elif mapping.custom_spec:
             if mapping.custom_spec in data:
-                data[model_field] = data.pop(mapping.custom_spec)
+                data[model_field] = data[mapping.custom_spec]
 
         else:
             # Handle nested fields
@@ -120,7 +120,7 @@ class Model(BaseModel):
                 if value is not None:
                     data[model_field] = value
             elif mapping.base_field in data:
-                data[model_field] = data.pop(mapping.base_field)
+                data[model_field] = data[mapping.base_field]
 
         return data
 
@@ -132,7 +132,7 @@ class Model(BaseModel):
 
         for i, part in enumerate(parts):
             if part in current:
-                obj = current.pop(part) if i == 0 else current[part]
+                obj = current[part]
 
                 # Navigate through the dark fields
                 if isinstance(obj, dict):
