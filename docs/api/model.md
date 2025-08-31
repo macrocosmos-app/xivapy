@@ -94,12 +94,12 @@ ContentFinderCondition(name={'en': 'the Binding Coil of Bahamut - Turn 5', 'de':
 
     You'll need to change the type from `str` to `xivapy.LangDict` to get this particular data output. The result is a dictionary with all the languages you request as keys of the dictionary
 
-# Model API
+## Model API
 
-## Model
+### Model
 
 ::: xivapy.model.Model
 
-## FieldMapping
+### FieldMapping
 
 ::: xivapy.model.FieldMapping

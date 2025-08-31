@@ -51,6 +51,8 @@ class Query:
             prefix = ''
         if isinstance(self.value, str) and self.operation in ['=', '~']:
             escaped_value = f'"{self.value}"'
+        elif isinstance(self.value, bool):
+            escaped_value = 'true' if self.value else 'false'
         else:
             escaped_value = str(self.value)
         return f'{prefix}{self.field}{self.operation}{escaped_value}'
