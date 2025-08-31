@@ -1,5 +1,3 @@
-## XIVAPI Client
-
 The Client class is the core of this library, and thus has the most features. It takes a bit to walk through all of them, so it's best to categorize them by feature:
 
 ### Getting data from Sheets

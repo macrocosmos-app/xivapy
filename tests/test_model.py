@@ -64,6 +64,27 @@ def test_get_xivapi_fields_with_override():
     assert fields == expected
 
 
+def test_multiple_fields_with_same_nested_source():
+    """Test that data is non-destructively pulled out of a nested dict."""
+
+    class TestModel(Model):
+        tanks: Annotated[int, FieldMapping('ContentMemberType.TanksPerParty')]
+        healers: Annotated[int, FieldMapping('ContentMemberType.HealersPerParty')]
+
+    data = {
+        'ContentMemberType': {
+            'fields': {
+                'TanksPerParty': 2,
+                'HealersPerParty': 1,
+            }
+        }
+    }
+
+    result = TestModel.model_validate(data)
+    assert result.tanks == 2
+    assert result.healers == 1
+
+
 def test_model_with_no_fields():
     """Test defining an empty model."""
 
