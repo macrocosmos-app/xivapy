@@ -5,7 +5,7 @@
 Install using pip with:
 
 ```
-$ pip install git+https://github.com/macrocosmos-app/xivapy.git@main
+$ pip install xivapy
 ```
 
 ## Quickstart
