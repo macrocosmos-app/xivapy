@@ -12,7 +12,7 @@ An async python client for accessing XIVAPI data for Final Fantasy XIV.
 ## Installation
 
 ```
-pip install git+https://github.com/macrocosmos-app/xivapy.git@main
+pip install xivapy
 ```
 
 ## Quick Start
@@ -63,51 +63,7 @@ async with xivapy.Client() as client:
 
 ## API Reference
 
-This is only a basic overview of the library; as documentation is developed, this section will be removed/changed
-
-### Core Classes
-
-**`xivapy.Client`**:
-* `search(model: xivapy.Model, query: xivapy.QueryBuilder | str)` - Search sheets with a query
-* `search(models: tuple[xivapy.Model], query: xivapy.QueryBuilder | str)` - Search multiple sheets with a query
-* `sheet(model: xivapy.Model, *, row: int = N)` - Pull a single row from a sheet
-* `sheet(model: xivapy.Model, *, rows: list[int] = [...])` - Pull several rows from a sheet
-* `asset(path: str, format: xivapy.Format = 'png')` - Retrieve an asset from the game (defaults to png format)
-* `icon(icon_id: int, format: xivapy.Format = 'jpg')` - Retrieve an icon from the game
-* `map(territory: str, index: str)` - Retrieve a (composed) map from the game
-* `versions()` - Get available game versions
-* `sheets()` - List all available sheets
-
-**`xivapy.Model`**:
-* Inherit to create a typed data class for use with client methods - they provide the field parameters and sheet name automatically
-* Use fields with `xivapy.FieldMapping` to map API fields to model fields:
-
-```python
-custom_name: Annotated[str, xivapy.FieldMapping('Name')]
-```
-
-* If your model name does not match the sheet name, you can set the sheet name with `__sheetname__ = 'CorrectSheetName'`
-
-**`xivapy.QueryBuilder`** - Build search queries
-* `.where(Field=value)` - looking for exact matches; can be compounded:
-
-```python
-QueryBuilder().where(Name='Foo', Bar='Baz')
-```
-
-* `.contains(Field='text')` - Search within fields
-
-```python
-QueryBuilder().contains(Name='the') # equivalent to `Name~"the"
-```
-
-* Supports `>`, `>=`, `<`, `<=` with `.gt`, `.gte`, `.lt`, `.lte`
-* `.required()` / `.excluded()` - makes the previous item as required or excluded
-
-### Types
-
-**`xivapy.LangDict`** - `TypedDict` representing the return fields of items like `Name@lang(en)`
-**`xivapy.Format`** - Listed formats that are acceptable for `asset` method
+You can see the docs at https://macrocosmos-app.github.io/xivapy
 
 ## Development
 

@@ -27,6 +27,47 @@ BASIC_SEARCH_RESPONSE = {
     'next': None,
 }
 
+MULTI_MODEL_SEARCH_RESPONSE = {
+    'results': [
+        {
+            'score': 1.0,
+            'sheet': 'TestSheet',
+            'row_id': 1,
+            'fields': {'Name': 'Test Item', 'Level': 50},
+        },
+        {
+            'score': 0.3333,
+            'sheet': 'OtherSheet',
+            'row_id': 7,
+            'fields': {'Name': 'Other Item', 'Field@as(raw)': 14},
+        },
+    ],
+    'next': None,
+}
+
+MULTI_MODEL_SEARCH_RESPONSE_BROKEN = {
+    'results': [
+        {
+            'score': 1.0,
+            'sheet': 'TestSheet',
+            'row_id': 1,
+            'fields': {'Name': 'Test Item', 'Level': 50},
+        },
+        {
+            'score': 0.3333,
+            'sheet': 'OtherSheet',
+            'row_id': 7,
+            'fields': {'Name': 'Other Item'},
+        },
+        {
+            'score': 0.512,
+            'sheet': 'TestSheet',
+            'row_id': 83,
+            'fields': {'Name': 'Other Test Item', 'Level': 88},
+        },
+    ]
+}
+
 SEARCH_RESPONSE_PAGE_1 = {
     'results': [
         {
@@ -51,3 +92,19 @@ SEARCH_RESPONSE_PAGE_2 = {
 }
 
 SHEET_ROW_RESPONSE = {'row_id': 1, 'fields': {'Name': 'Test Item', 'Level': 50}}
+SHEET_ROWS_RESPONSE = {
+    'rows': [
+        {
+            'row_id': 1,
+            'fields': {'Name': 'Test Item', 'Level': 50},
+        },
+        {
+            'row_id': 2,
+            'fields': {'Name': 'Second Item', 'Level': 44},
+        },
+        {
+            'row_id': 3,
+            'fields': {'Name': 'Final Item', 'Level': 999},
+        },
+    ]
+}

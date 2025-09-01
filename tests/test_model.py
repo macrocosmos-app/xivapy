@@ -1,7 +1,12 @@
 """Tests related to xivapy models."""
 
-from typing_extensions import Annotated
+from typing import Annotated
+
+from pydantic import ValidationError
+import pytest
+
 from xivapy.model import Model, FieldMapping
+from xivapy.types import LangDict
 
 
 def test_model_sheet_name_from_class():
@@ -92,3 +97,74 @@ def test_model_with_no_fields():
 
     fields = EmptyModel.get_xivapi_fields()
     assert fields == set()
+
+
+def test_field_custom_spec():
+    """Test that you can completely override the field with a custom specification."""
+    custom_spec = FieldMapping('custom', custom_spec='custom@as(custom)')
+
+    assert custom_spec.to_field_specs() == ['custom@as(custom)']
+
+
+def test_field_language_spec():
+    """Test that you can define a series of language(s) as a specification."""
+    all_langs = FieldMapping('all', languages=['en', 'fr', 'de', 'ja'])
+    no_french = FieldMapping('NoRomance', languages=['en', 'de', 'ja'])
+
+    all_langs_specs = all_langs.to_field_specs()
+    assert all_langs_specs == [
+        'all@lang(en)',
+        'all@lang(fr)',
+        'all@lang(de)',
+        'all@lang(ja)',
+    ]
+
+    no_french_specs = no_french.to_field_specs()
+    assert no_french_specs == [
+        'NoRomance@lang(en)',
+        'NoRomance@lang(de)',
+        'NoRomance@lang(ja)',
+    ]
+
+
+def test_process_language_fields():
+    """Test processing language fields from xivapi responses."""
+
+    class Test(Model):
+        name: Annotated[
+            LangDict, FieldMapping('Name', languages=['en', 'fr', 'de', 'ja'])
+        ]
+
+    result = Test.model_validate(
+        {
+            'row_id': 44,
+            'Name@lang(en)': 'Hello America',
+            'Name@lang(fr)': 'Hello France',
+            'Name@lang(de)': 'Hello Germany',
+            'Name@lang(ja)': 'Hello Japan',
+        }
+    )
+
+    assert isinstance(result, Test)
+    assert 'en' in result.name and result.name['en'] == 'Hello America'
+    assert 'fr' in result.name and result.name['fr'] == 'Hello France'
+    assert 'de' in result.name and result.name['de'] == 'Hello Germany'
+    assert 'ja' in result.name and result.name['ja'] == 'Hello Japan'
+
+
+def test_process_fields_missing_language():
+    """Test what happens when a requested language just doesn't come back."""
+
+    class Test(Model):
+        name: Annotated[LangDict, FieldMapping('Name', languages=['en', 'fr'])]
+
+    result = Test.model_validate(
+        {
+            'row_id': 1,
+            'Name@lang(en)': 'Hello',
+        }
+    )
+
+    assert 'fr' not in result.name
+    assert 'en' in result.name
+    assert result.name['en'] == 'Hello'

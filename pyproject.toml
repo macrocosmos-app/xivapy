@@ -50,7 +50,7 @@ markers = [
 
 [tool.coverage.run]
 source = ["src"]
-omit = ["tests/*"]
+omit = ["tests/*", "src/xivapy/version.py"]
 
 [tool.pyright]
 venvPath = "."
