@@ -4,6 +4,7 @@ import pytest
 
 from xivapy.query import QueryBuilder
 from xivapy.exceptions import QueryBuildError
+from xivapy.model import QueryField, FieldMapping, Model
 
 
 def test_compound_where_query():
@@ -79,3 +80,41 @@ def test_required_exclude_on_same_query():
             .excluded()
         )
         query.build()
+
+
+def test_basic_model_querying():
+    """Test SQLAlchemy-style field querying with models."""
+
+    class Item(Model):
+        name: QueryField[str] = QueryField(FieldMapping('Name'))
+        Level: QueryField[int]
+
+    # Basic equality
+    # Do not examine how these expressions work under the hood.
+    # There is only sadness there, and lots of pre-runtime trickery
+    # to make systems like pyright and mypy happy about this
+    query = QueryBuilder().where(Item.name == 'Potion')
+    assert query.build() == 'Name="Potion"'
+
+    # Contains
+    query = QueryBuilder().where(Item.name.contains('Something'))
+    assert query.build() == 'Name~"Something"'
+
+    # Comparison
+    query = QueryBuilder().where(Item.Level >= 50)
+    assert query.build() == 'Level>=50'
+
+    # Multiple or'd conditions
+    query = QueryBuilder().where(Item.name == 'Hyper Potion').where(Item.Level < 50)
+    assert query.build() == 'Name="Hyper Potion" Level<50'
+
+
+def test_nested_model_queries():
+    """Test queries when the field is nested."""
+
+    class Item(Model):
+        name: QueryField[str] = QueryField(FieldMapping('Name'))
+        nested_id: QueryField[int] = QueryField(FieldMapping('Nested.Foo.Id'))
+
+    query = QueryBuilder().where(Item.nested_id == 4)
+    assert query.build() == 'Nested.Foo.Id=4'

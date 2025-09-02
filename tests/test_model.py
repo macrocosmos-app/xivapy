@@ -5,7 +5,7 @@ from typing import Annotated
 from pydantic import ValidationError
 import pytest
 
-from xivapy.model import Model, FieldMapping
+from xivapy.model import Model, FieldMapping, QueryField
 from xivapy.types import LangDict
 
 
@@ -168,3 +168,47 @@ def test_process_fields_missing_language():
     assert 'fr' not in result.name
     assert 'en' in result.name
     assert result.name['en'] == 'Hello'
+
+
+def test_queryfield_model_fields():
+    """Test that models with QueryField behave as normal when instantiated."""
+
+    class Test(Model):
+        row_id: QueryField[int]
+        name: QueryField[str] = QueryField(FieldMapping('Name'))
+
+    result = Test.model_validate(
+        {
+            'row_id': 1,
+            'Name': 'Foo',
+        }
+    )
+
+    assert isinstance(result, Test)
+    assert result.row_id == 1
+    assert result.name == 'Foo'
+
+
+def test_queryfield_type_responses():
+    """At a minimum, QueryFields should accept int, str, and dict responses."""
+
+    class Test(Model):
+        row_id: QueryField[int]
+        Name: QueryField[str]
+        Params: QueryField[dict]
+
+    result = Test.model_validate(
+        {
+            'row_id': 432,
+            'Name': 'Foo',
+            'Params': {
+                'foo': 'bar',
+                'baz': 2,
+            },
+        }
+    )
+
+    assert isinstance(result, Test)
+    assert result.row_id == 432
+    assert result.Name == 'Foo'
+    assert result.Params == {'foo': 'bar', 'baz': 2}

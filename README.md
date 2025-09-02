@@ -20,13 +20,11 @@ pip install xivapy
 The easiest way to use the client is to define a model and try looking through a sheet with a search.
 
 ```python
-import typing
-from pydantic import Field
 import xivapy
 
 class ContentFinderCondition(xivapy.Model):
     # Custom map a python field to an xivapi field name
-    id: int = Field(alias='row_id')
+    id: xivapy.QueryField[int] = xivapy.QueryField(FieldMapping('row_id'))
     # compress language fields into a dictionary for easy viewing
     # for this, however, you'll need to set up a default dict for it to use
     # The output of this is:
@@ -37,9 +35,9 @@ class ContentFinderCondition(xivapy.Model):
     #   'ja': "護る者、壊す者"
     # }
     # Optional languages will be omitted
-    name: Annotated[xivapy.LangDict, xivapy.FieldMapping('Name', languages=['en', 'de', 'fr', 'ja'])] = Field(default_factory=lambda: xivapy.LangDict.copy())
+    name: xivapy.QueryField[xivapy.LangDict] = xivapy.QueryField(FieldMapping('Name', languages=['en', 'de', 'fr', 'ja']))
     # get a deeply nested (and optional) field lifted up into a top-level field
-    bgm_file: Annotated[str | None, xivapy.FieldMapping('Content.BGM.File')] = None
+    bgm_file: xivapy.QueryField[str | None] = xivapy.QueryField(xivapy.FieldMapping('Content.BGM.File'))
     # by default, the sheet to be searched will be the name of the model
     # if you wish to override this, set the following:
     #__sheetname__ = 'SomeOtherSheetName'
@@ -48,7 +46,7 @@ async with xivapy.Client() as client:
     # Search ContentFinderCondition for all content that mentor roulette applies to
     async for content in client.search(ContentFinderCondition, query=xivapy.QueryBuilder().where(MentorRoulette=1)):
         # Data is typed as SearchResult[ContentFinderCondition], accessable by the `.data` field
-        print(f'{content.data.name} ({content.data.id}) - {content.data.bgm_file}')
+        print(f'{content.data.name.get('en', 'No English Name')} ({content.data.id}) - {content.data.bgm_file}')
 
     # The same thing, but for a single id:
     result = await client.sheet(ContentFinderCondition, row=998)

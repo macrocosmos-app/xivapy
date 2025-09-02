@@ -1,6 +1,6 @@
 [project]
 name = "xivapy"
-version = "0.4.0"
+version = "0.5.0"
 description = "Async Python client for XIVAPI for Final Fantasy XIV"
 readme = "README.md"
 requires-python = ">=3.13.2"
@@ -26,6 +26,14 @@ Documentation = "https://github.com/macrocosmos-app/xivapy#readme"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.mypy]
+ignore_missing_imports = true
+warn_redundant_casts = true
+explicit_package_bases = true
+namespace_packages = true
+no_site_packages = true
+exclude = ["build/", "dist/", ".venv/"]
 
 [tool.ruff.lint]
 select = ["D"]

@@ -6,10 +6,12 @@ from typing import Self, Any
 from dataclasses import dataclass
 
 from xivapy.exceptions import QueryBuildError
+from xivapy.types import QueryOperators
 
 __all__ = [
     'Query',
     'QueryBuilder',
+    'QueryDescriptor',
     'Group',
 ]
 
@@ -32,7 +34,7 @@ class Query:
     """
 
     field: str
-    operation: str
+    operation: QueryOperators
     # TODO: scope this to number | str | bool as those are the only
     # listed ones in the docs
     value: Any
@@ -58,6 +60,45 @@ class Query:
         return f'{prefix}{self.field}{self.operation}{escaped_value}'
 
 
+class QueryDescriptor:
+    """Initializes a QueryDescriptor, which QueryFields turn into at runtime."""
+
+    def __init__(self, field_name: str, xivapi_field: str):
+        """Initializes a QueryDescriptor."""
+        self.field_name = field_name
+        self.xivapi_field = xivapi_field
+
+    def __get__(self, instance, owner):
+        """Returns this class if not instantiated, but returns the instantiated value otherwise."""
+        if instance is not None:
+            return instance.__dict__.get(self.field_name)
+        return self
+
+    def __eq__(self, value: object, /) -> Query:  # type: ignore[override]
+        """Returns a Query showing the field name is equal to the value."""
+        return Query(self.xivapi_field, '=', value)
+
+    def __lt__(self, value: object, /) -> Query:
+        """Returns a Query showing the field name is less than the value."""
+        return Query(self.xivapi_field, '<', value)
+
+    def __le__(self, value: object, /) -> Query:
+        """Returns a Query showing the field name is less than or equal to the value."""
+        return Query(self.xivapi_field, '<=', value)
+
+    def __gt__(self, value: object, /) -> Query:
+        """Returns a Query showing the field name is greater than the value."""
+        return Query(self.xivapi_field, '>', value)
+
+    def __ge__(self, value: object, /) -> Query:
+        """Returns a Query showing the field name is greater than or equal to the value."""
+        return Query(self.xivapi_field, '>=', value)
+
+    def contains(self, value: object, /) -> Query:
+        """Returns a Query showing that the string from the value is inside the field."""
+        return Query(self.xivapi_field, '~', value)
+
+
 class QueryBuilder:
     """Builder for constructing xivapi search queries.
 
@@ -78,15 +119,18 @@ class QueryBuilder:
         """Initializes an empty query builder."""
         self.clauses: list[Query | Group] = []
 
-    def where(self, **kwargs) -> Self:
+    def where(self, *queries: Query, **kwargs) -> Self:
         """Add an equality condition to the query.
 
         Args:
+            *queries: A list of plain queries to add to the list.
             **kwargs: Field-value pairs for exact matches.
 
         Returns:
             Self for method chaining.
         """
+        for query in queries:
+            self.clauses.append(query)
         for field, value in kwargs.items():
             self.clauses.append(Query(field, '=', value))
         return self
