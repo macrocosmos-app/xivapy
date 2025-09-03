@@ -98,4 +98,21 @@ name='Flame Seal' cast_time=2 icon='ui/icon/065000/065006_hr1.tex'
 name='Lightning Cluster' cast_time=2 icon='ui/icon/020000/020017_hr1.tex'
 ```
 
-There's even more you can do with the library, like search sheets, build queries, and customize models further - just keep reading if you're interested.
+## Searching
+
+I helped you cheat at the start, but let's find Phoenix Down for ourselves this time. We can keep reusing the `Item` model without issue, but we need to know what to search for. According to the [xivapi docs](https://v2.xivapi.com/docs/guides/search/), if we wanted to search for 'Phoenix Down', we can do that with `Name="Phoenix Down"`, so let's search that way:
+
+```python
+>>> async with xivapy.Client() as client:
+...     async for item in client.search(Item, query='Name="Phoenix Down"'):
+...         print(item)
+SearchResult(score=1.0, sheet='Item', row_id=4570, data=Item(name='Phoenix Down', cast_time=8, icon='ui/icon/020000/020650_hr1.tex'))
+```
+
+The `search` method takes a Model and asks for a search query, and returns a `SearchResult`. Moving past that (see further in the docs for more data!), we can briefly talk about queries. Let's make this a tiny bit cleaner:
+
+```python
+async for item in client.search(Item, query=xivapy.QueryBuilder().contains(Name='Phoenix Down')):
+```
+
+That's slightly more pythonic at least, but if you look at the model and query docs, you'll see there's even more advanced ways to do queries and models such that you can use the models themselves as part of your queries!

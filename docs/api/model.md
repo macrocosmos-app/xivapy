@@ -42,13 +42,12 @@ This will likely suit the needs for most people to fetch in this way; you only r
 
 ### Extra field mapping parameters
 
-The first thing you might notice is that fields like `Name` and `ClassJobLevelRequired` don't quite fit the python scheme. In these cases when you want to rename the fields themselves to be more pythonic, you can use `xivapy.FieldMapping` to map the API field to the python field:
+The first thing you might notice is that fields like `Name` and `ClassJobLevelRequired` don't quite fit the python scheme. In these cases when you want to rename the fields themselves to be more pythonic, you can use `xivapy.QueryField` with `xivapy.FieldMapping` to map the API field to the python field:
 
 ```python
-from typing import Annotated
 class ContentFinderCondition(xivapy.Model):
-    name: Annotated[str, xivapy.FieldMapping('Name')]
-    content_member_type: Annotated[dict, xivapy.FieldMapping('ContentMemberType')]
+    name: xivapy.QueryField[str] = xivapy.QueryField(xivapy.FieldMapping('Name'))
+    content_member_type: xivapy.QueryField[dict] = xivapy.QueryField(xivapy.FieldMapping('ContentMemberType'))
 ```
 
 This effectively works the same as the first example, but the fields have more pythonic names.
@@ -57,12 +56,12 @@ But what if we actually cared about the party composition for this content and d
 
 ```python
 class ContentFinderCondition(xivapy.Model):
-    id: Annotated[int, xivapy.FieldMapping('row_id')]
-    name: Annotated[str, xivapy.FieldMapping('Name')]
-    tanks_required: Annotated[int, xivapy.FieldMapping('ContentMemberType.TanksPerParty')]
-    healers_required: Annotated[int, xivapy.FieldMapping('ContentMemberType.HealersPerParty')]
-    melees_required: Annotated[int, xivapy.FieldMapping('ContentMemberType.MeleesPerParty')]
-    ranged_required: Annotated[int, xivapy.FieldMapping('ContentMemberType.RangedPerParty')]
+    id: xivapy.QueryField[int] = xivapy.QueryField(xivapy.FieldMapping('row_id'))
+    name: xivapy.QueryField[str] = xivapy.QueryField(xivapy.FieldMapping('Name'))
+    tanks_required: xivapy.QueryField[int] = xivapy.QueryField(xivapy.FieldMapping('ContentMemberType.TanksPerParty'))
+    healers_required: xivapy.QueryField[int] = xivapy.QueryField(xivapy.FieldMapping('ContentMemberType.HealersPerParty'))
+    melees_required: xivapy.QueryField[int] = xivapy.QueryField(xivapy.FieldMapping('ContentMemberType.MeleesPerParty'))
+    ranged_required: xivapy.QueryField[int] = xivapy.QueryField(xivapy.FieldMapping('ContentMemberType.RangedPerParty'))
 ```
 
 Now the same request returns the data that you asked for:
@@ -78,9 +77,10 @@ By using `Field.Subfield` as part of your mapping, the field mapping will 'lift'
 You can also use `xivapy.FieldMapping` to get languages (for fields that support it). Back to our example, let's say we want to know all the (supported) languages for the name(s) of T5:
 
 ```python
-class ContentFinderCondition(xivapy.Model):
+from xivapy import QueryField, FieldMapping, Model, LangDict
+class ContentFinderCondition(Model):
     # modified from the previous model
-    name: Annotated[xivapy.LangDict, xivapy.FieldMapping('Name', languages=['en', 'fr', 'de', 'ja'])]
+    name: QueryField[LangDict] = QueryField(FieldMapping('Name', languages=['en', 'fr', 'de', 'ja']))
     # everything else is the same
 ```
 

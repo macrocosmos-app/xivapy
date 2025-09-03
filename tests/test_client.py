@@ -24,6 +24,7 @@ from xivapy.model import FieldMapping
 from xivapy.query import QueryBuilder
 
 
+@pytest.mark.integration
 async def test_client_close():
     """Test that the client closes without exception."""
     client = Client()
@@ -31,6 +32,7 @@ async def test_client_close():
     await client.close()
 
 
+@pytest.mark.unit
 def test_setting_patch():
     """Test setting patch as part of the client."""
     client = Client()
@@ -38,6 +40,7 @@ def test_setting_patch():
     assert client.game_version == '7.21'
 
 
+@pytest.mark.unit
 def test_flatten_item_data():
     """Test flattening api response data."""
     client = Client()
@@ -46,6 +49,7 @@ def test_flatten_item_data():
     assert result == {'Name': 'Foo', 'row_id': 123}
 
 
+@pytest.mark.integration
 async def test_versions_success(httpx_mock: HTTPXMock):
     """Test version endpoint with good response."""
     httpx_mock.add_response(
@@ -59,6 +63,7 @@ async def test_versions_success(httpx_mock: HTTPXMock):
         assert 'latest' in versions
 
 
+@pytest.mark.integration
 async def test_versions_http_error(httpx_mock: HTTPXMock):
     """Test version endpoint with bad response."""
     httpx_mock.add_response(
@@ -72,6 +77,7 @@ async def test_versions_http_error(httpx_mock: HTTPXMock):
         assert exc_info.value.status_code == 500
 
 
+@pytest.mark.integration
 async def test_sheets_success(httpx_mock: HTTPXMock):
     """Test sheets endpoint with good response."""
     httpx_mock.add_response(
@@ -86,6 +92,7 @@ async def test_sheets_success(httpx_mock: HTTPXMock):
         assert 'Quest' in sheets
 
 
+@pytest.mark.integration
 async def test_sheets_http_error(httpx_mock: HTTPXMock):
     """Test sheets endpoint with bad response."""
     httpx_mock.add_response(
@@ -99,6 +106,7 @@ async def test_sheets_http_error(httpx_mock: HTTPXMock):
         assert exc_info.value.status_code == 500
 
 
+@pytest.mark.integration
 async def test_map_success(httpx_mock: HTTPXMock):
     """Test map endpoint with valid territory and index format."""
     httpx_mock.add_response(
@@ -111,6 +119,7 @@ async def test_map_success(httpx_mock: HTTPXMock):
         assert looking_for_a_good_map == b'abadlydrawnmapwithcrayonthatsnotevenajpg'
 
 
+@pytest.mark.unit
 async def test_map_invalid_territory():
     """Test map with invalid territory format."""
     async with Client() as client:
@@ -118,6 +127,7 @@ async def test_map_invalid_territory():
             await client.map('invalid', '00')
 
 
+@pytest.mark.unit
 async def test_map_invalid_index():
     """Test map with invalid index."""
     async with Client() as client:
@@ -127,6 +137,7 @@ async def test_map_invalid_index():
             await client.map('a1b2', 'invalid')
 
 
+@pytest.mark.integration
 async def test_asset_success(httpx_mock: HTTPXMock):
     """Test asset with good response."""
     httpx_mock.add_response(
@@ -139,6 +150,7 @@ async def test_asset_success(httpx_mock: HTTPXMock):
         assert final_spell_icon == b'asparklerthathealstheenemy'
 
 
+@pytest.mark.integration
 async def test_asset_http_error(httpx_mock: HTTPXMock):
     """Test asset endpoint with bad response."""
     httpx_mock.add_response(
@@ -152,6 +164,7 @@ async def test_asset_http_error(httpx_mock: HTTPXMock):
         assert exc_info.value.status_code == 500
 
 
+@pytest.mark.integration
 async def test_asset_none_found(httpx_mock: HTTPXMock):
     """Test asset endpoint where it isn't found."""
     httpx_mock.add_response(
@@ -164,6 +177,7 @@ async def test_asset_none_found(httpx_mock: HTTPXMock):
         assert asset == None
 
 
+@pytest.mark.integration
 async def test_search_success(httpx_mock: HTTPXMock):
     """Test searching something where it's a single result."""
 
@@ -200,6 +214,7 @@ async def test_search_success(httpx_mock: HTTPXMock):
     assert item.data.level == 50
 
 
+@pytest.mark.integration
 async def test_paginated_search_success(httpx_mock: HTTPXMock):
     """Test getting multiple pages from the search endpoint with a cursor."""
 
@@ -253,6 +268,7 @@ async def test_paginated_search_success(httpx_mock: HTTPXMock):
         await anext(req_iter)
 
 
+@pytest.mark.integration
 async def test_sheet_single_row(httpx_mock: HTTPXMock):
     """Test querying a single sheet row."""
 
@@ -280,6 +296,7 @@ async def test_sheet_single_row(httpx_mock: HTTPXMock):
     assert result.level == 50
 
 
+@pytest.mark.integration
 async def test_sheet_row_not_found(httpx_mock: HTTPXMock):
     """Test a 404/None response from an endpoint."""
 
@@ -307,6 +324,7 @@ async def test_sheet_row_not_found(httpx_mock: HTTPXMock):
     assert result is None
 
 
+@pytest.mark.integration
 async def test_sheet_multiple_rows(httpx_mock: HTTPXMock):
     """Test multiple sheet responses from rows."""
 
@@ -358,6 +376,7 @@ async def test_sheet_multiple_rows(httpx_mock: HTTPXMock):
         await anext(result_iter)
 
 
+@pytest.mark.integration
 async def test_search_with_querybuilder(httpx_mock: HTTPXMock):
     """Test using search with QueryBuilder instead of plain strings."""
 
@@ -393,6 +412,7 @@ async def test_search_with_querybuilder(httpx_mock: HTTPXMock):
         await anext(search_iter)
 
 
+@pytest.mark.integration
 async def test_search_multiple_models(httpx_mock: HTTPXMock):
     """Test a search result which has multiple Models in the response."""
 
@@ -452,6 +472,7 @@ async def test_search_multiple_models(httpx_mock: HTTPXMock):
         await anext(search_iter)
 
 
+@pytest.mark.integration
 async def test_model_validation_error(httpx_mock: HTTPXMock):
     """Test raising an exception when the client gets incorrect data."""
 
@@ -478,6 +499,7 @@ async def test_model_validation_error(httpx_mock: HTTPXMock):
         await client.sheet(Test, row=1)
 
 
+@pytest.mark.integration
 async def test_model_validation_multi_model(httpx_mock: HTTPXMock):
     """Test that model validations during mixed model searches raise exceptions and continue if caught."""
 
@@ -525,6 +547,7 @@ async def test_model_validation_multi_model(httpx_mock: HTTPXMock):
         await anext(search_iter)
 
 
+@pytest.mark.unit
 def test_flatten_data_empty():
     """Test that flattening data bails correctly if the input is basically empty."""
     client = Client()
@@ -532,6 +555,7 @@ def test_flatten_data_empty():
     assert result == {}
 
 
+@pytest.mark.integration
 async def test_sheet_batch_http_error(httpx_mock: HTTPXMock):
     """Test that the client raises an exception on a 500 error during sheet batching."""
 

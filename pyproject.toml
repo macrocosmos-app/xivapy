@@ -54,6 +54,7 @@ markers = [
     "slow: marks tests as slow",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "regression: marks tests as regression tests for previously fixed bugs",
 ]
 
 [tool.coverage.run]

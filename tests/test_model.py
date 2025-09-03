@@ -9,6 +9,7 @@ from xivapy.model import Model, FieldMapping, QueryField
 from xivapy.types import LangDict
 
 
+@pytest.mark.unit
 def test_model_sheet_name_from_class():
     """Test that we get the class name when no sheet name is defined."""
 
@@ -18,6 +19,7 @@ def test_model_sheet_name_from_class():
     assert TestItem.get_sheet_name() == 'TestItem'
 
 
+@pytest.mark.unit
 def test_model_sheet_name_from_sheetname():
     """Test getting sheet name from defined field."""
 
@@ -28,6 +30,7 @@ def test_model_sheet_name_from_sheetname():
     assert CustomModel.get_sheet_name() == 'Ackchyally'
 
 
+@pytest.mark.unit
 def test_basic_model_validation():
     """Test that fields map even without specific fields defined."""
 
@@ -44,6 +47,7 @@ def test_basic_model_validation():
     assert model.level == 50
 
 
+@pytest.mark.unit
 def test_get_xivapi_fields_basic():
     """Test that defined basic fields in model generate as Title Cased names for xivapi."""
 
@@ -57,6 +61,7 @@ def test_get_xivapi_fields_basic():
     assert fields == expected
 
 
+@pytest.mark.unit
 def test_get_xivapi_fields_with_override():
     """Test overriding a field name to an xivapi-specific alias."""
 
@@ -69,6 +74,7 @@ def test_get_xivapi_fields_with_override():
     assert fields == expected
 
 
+@pytest.mark.unit
 def test_multiple_fields_with_same_nested_source():
     """Test that data is non-destructively pulled out of a nested dict."""
 
@@ -90,6 +96,7 @@ def test_multiple_fields_with_same_nested_source():
     assert result.healers == 1
 
 
+@pytest.mark.unit
 def test_model_with_no_fields():
     """Test defining an empty model."""
 
@@ -99,6 +106,7 @@ def test_model_with_no_fields():
     assert fields == set()
 
 
+@pytest.mark.unit
 def test_field_custom_spec():
     """Test that you can completely override the field with a custom specification."""
     custom_spec = FieldMapping('custom', custom_spec='custom@as(custom)')
@@ -106,6 +114,7 @@ def test_field_custom_spec():
     assert custom_spec.to_field_specs() == ['custom@as(custom)']
 
 
+@pytest.mark.unit
 def test_field_language_spec():
     """Test that you can define a series of language(s) as a specification."""
     all_langs = FieldMapping('all', languages=['en', 'fr', 'de', 'ja'])
@@ -127,6 +136,7 @@ def test_field_language_spec():
     ]
 
 
+@pytest.mark.unit
 def test_process_language_fields():
     """Test processing language fields from xivapi responses."""
 
@@ -152,6 +162,7 @@ def test_process_language_fields():
     assert 'ja' in result.name and result.name['ja'] == 'Hello Japan'
 
 
+@pytest.mark.unit
 def test_process_fields_missing_language():
     """Test what happens when a requested language just doesn't come back."""
 
@@ -170,6 +181,7 @@ def test_process_fields_missing_language():
     assert result.name['en'] == 'Hello'
 
 
+@pytest.mark.unit
 def test_queryfield_model_fields():
     """Test that models with QueryField behave as normal when instantiated."""
 
@@ -189,6 +201,7 @@ def test_queryfield_model_fields():
     assert result.name == 'Foo'
 
 
+@pytest.mark.unit
 def test_queryfield_type_responses():
     """At a minimum, QueryFields should accept int, str, and dict responses."""
 
