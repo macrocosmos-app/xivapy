@@ -6,7 +6,6 @@ from dataclasses import dataclass
 
 from pydantic import BaseModel, model_validator
 from pydantic_core import core_schema
-from pydantic._internal._model_construction import ModelMetaclass
 
 from xivapy.query import QueryDescriptor, Query
 
@@ -113,10 +112,16 @@ class QueryField[T]:
         return inner_schema
 
 
-class QueryModelMeta(ModelMetaclass):
-    def __new__(mcs, name, bases, namespace, **kwargs):
-        # Let Pydantic create the class first
-        cls = super().__new__(mcs, name, bases, namespace, **kwargs)
+class Model(BaseModel):
+    """Base model for all xivapy queries."""
+
+    __sheetname__: Optional[str] = None
+    model_config = {'populate_by_name': True}
+
+    @classmethod
+    def __pydantic_init_subclass__(cls, **kwargs):
+        """Pydantic's hooked __init_subclass__; used to add QueryDescriptors to QueryField fields."""
+        super().__pydantic_init_subclass__(**kwargs)
 
         # Now add our QueryDescriptors after Pydantic is done
         if hasattr(cls, '__annotations__'):
@@ -128,23 +133,13 @@ class QueryModelMeta(ModelMetaclass):
                     # Only add if we don't already have one
                     if not isinstance(getattr(cls, field_name, None), QueryDescriptor):
                         mapping = None
-                        if (
-                            hasattr(cls, '_queryfield_mappings')
-                            and field_name in cls._queryfield_mappings
-                        ):
-                            mapping = cls._queryfield_mappings[field_name]
+                        queryfield_mappings = getattr(cls, '_queryfield_mappings', {})
+                        if field_name in queryfield_mappings:
+                            mapping = queryfield_mappings[field_name]
                         xivapi_field = mapping.base_field if mapping else field_name
                         setattr(
                             cls, field_name, QueryDescriptor(field_name, xivapi_field)
                         )
-        return cls
-
-
-class Model(BaseModel, metaclass=QueryModelMeta):
-    """Base model for all xivapy queries."""
-
-    __sheetname__: Optional[str] = None
-    model_config = {'populate_by_name': True}
 
     @classmethod
     def get_sheet_name(cls) -> str:
