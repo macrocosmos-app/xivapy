@@ -314,8 +314,8 @@ def test_queryfield_mapping_preservation():
     assert Test.get_xivapi_fields() == expected_fields
 
     # Verify that mapping information is preserved
-    assert hasattr(Test, '_queryfield_mappings')
-    mappings = getattr(Test, '_queryfield_mappings', {})
+    assert hasattr(Test, '__queryfield_mappings__')
+    mappings = getattr(Test, '__queryfield_mappings__', {})
     assert 'id' in mappings
     assert 'name' in mappings
     assert 'nested_field' in mappings

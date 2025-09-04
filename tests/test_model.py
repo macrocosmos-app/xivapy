@@ -225,3 +225,101 @@ def test_queryfield_type_responses():
     assert result.row_id == 432
     assert result.Name == 'Foo'
     assert result.Params == {'foo': 'bar', 'baz': 2}
+
+
+@pytest.mark.unit
+def test_get_queryfield_mappings():
+    """Test basic QueryField mappings API returns correct QueryDescriptors."""
+
+    class Test(Model):
+        row_id: QueryField[int]
+        name: QueryField[str] = QueryField(FieldMapping('Name'))
+
+    mappings = Test.get_queryfield_mappings()
+
+    assert 'row_id' in mappings
+    assert 'name' in mappings
+    assert len(mappings) == 2
+
+    from xivapy.query import QueryDescriptor
+
+    assert isinstance(mappings['row_id'], QueryDescriptor)
+    assert isinstance(mappings['name'], QueryDescriptor)
+
+
+@pytest.mark.unit
+def test_get_queryfield_mappings_from_field_mapping():
+    """Test that FieldMapping configuration is preserved in QueryDescriptors."""
+
+    class Test(Model):
+        name: QueryField[str] = QueryField(FieldMapping('Name', languages=['en', 'fr']))
+        bgm: QueryField[str] = QueryField(FieldMapping('Content.BGM.File'))
+
+    mappings = Test.get_queryfield_mappings()
+
+    assert mappings['name'].xivapi_field == 'Name'
+    assert mappings['bgm'].xivapi_field == 'Content.BGM.File'
+
+
+@pytest.mark.unit
+def test_get_queryfield_mappings_empty_model():
+    """Test that QueryField mappings are absent when none are annotated."""
+
+    class Empty(Model):
+        row_id: int
+
+    mappings = Empty.get_queryfield_mappings()
+    assert mappings == {}
+
+
+@pytest.mark.unit
+def test_get_queryfield_mappings_inheritance():
+    """Test mappings with model inheritance."""
+
+    class Base(Model):
+        row_id: QueryField[int]
+        Name: str
+
+    class Derived(Base):
+        content: QueryField[str] = QueryField(FieldMapping('Content'))
+
+    base_mappings = Base.get_queryfield_mappings()
+    derived_mappings = Derived.get_queryfield_mappings()
+
+    assert 'row_id' in base_mappings
+    assert 'Name' not in base_mappings
+    assert len(base_mappings) == 1
+
+    assert 'row_id' in derived_mappings
+    assert 'content' in derived_mappings
+    assert 'Name' not in base_mappings
+    assert len(derived_mappings) == 2
+
+
+@pytest.mark.unit
+@pytest.mark.regression
+def test_queryfield_mappings_immutable():
+    """Test that returned mappings are copies, not refs."""
+
+    class Test(Model):
+        name: QueryField[str]
+
+    mapping_one = Test.get_queryfield_mappings()
+    mapping_two = Test.get_queryfield_mappings()
+
+    assert mapping_one == mapping_two
+    assert mapping_one is not mapping_two
+
+
+@pytest.mark.unit
+@pytest.mark.regression
+def test_queryfield_mappings_private():
+    """Test that returned mappings are copies, not refs."""
+
+    class Test(Model):
+        row_id: QueryField[int]
+        name: QueryField[str] = QueryField(FieldMapping('Name'))
+
+    assert not hasattr(Test, '_queryfield_mappings')  # old name
+    assert hasattr(Test, '__queryfield_mappings__')
+    assert hasattr(Test, '__querydescriptor_mappings__')

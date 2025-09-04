@@ -1,6 +1,6 @@
 """xivapy Model-related classes."""
 
-from typing import Optional, Any, get_args, Union, get_origin
+from typing import Optional, Any, get_args, Union, get_origin, get_type_hints
 import types
 from dataclasses import dataclass
 
@@ -59,34 +59,46 @@ class QueryField[T]:
         self.field_name = name
 
         # Store QueryField mapping info for the metaclass to use later
-        if not hasattr(owner, '_queryfield_mappings'):
-            owner._queryfield_mappings = {}
-        owner._queryfield_mappings[name] = self.mapping
+        if not hasattr(owner, '__queryfield_mappings__'):
+            owner.__queryfield_mappings__ = {}
+        owner.__queryfield_mappings__[name] = self.mapping
 
     # These become "real" at runtime
     def __eq__(self, value: object, /) -> Query:  # type: ignore[override,empty-body]
         """Dummy method that gets replaced by QueryDescriptor at runtime."""
-        ...
+        raise NotImplementedError(
+            'Queryfield.__eq__ accessed before class was fully constructed.'
+        )
 
     def __lt__(self, value: object, /) -> Query:  # type: ignore[empty-body]
         """Dummy method that gets replaced by QueryDescriptor at runtime."""
-        ...
+        raise NotImplementedError(
+            'Queryfield.__lt__ accessed before class was fully constructed.'
+        )
 
     def __le__(self, value: object, /) -> Query:  # type: ignore[empty-body]
         """Dummy method that gets replaced by QueryDescriptor at runtime."""
-        ...
+        raise NotImplementedError(
+            'Queryfield.__le__ accessed before class was fully constructed.'
+        )
 
     def __gt__(self, value: object, /) -> Query:  # type: ignore[empty-body]
         """Dummy method that gets replaced by QueryDescriptor at runtime."""
-        ...
+        raise NotImplementedError(
+            'Queryfield.__gt__ accessed before class was fully constructed.'
+        )
 
     def __ge__(self, value: object, /) -> Query:  # type: ignore[empty-body]
         """Dummy method that gets replaced by QueryDescriptor at runtime."""
-        ...
+        raise NotImplementedError(
+            'Queryfield.__ge__ accessed before class was fully constructed.'
+        )
 
     def contains(self, value: object, /) -> Query:  # type: ignore[empty-body]
         """Dummy method that gets replaced by QueryDescriptor at runtime."""
-        ...
+        raise NotImplementedError(
+            'Queryfield.contains accessed before class was fully constructed.'
+        )
 
     @classmethod
     def __get_pydantic_core_schema__(
@@ -123,23 +135,46 @@ class Model(BaseModel):
         """Pydantic's hooked __init_subclass__; used to add QueryDescriptors to QueryField fields."""
         super().__pydantic_init_subclass__(**kwargs)
 
+        inherited_mappings: dict[str, QueryDescriptor] = getattr(
+            cls, '__querydescriptor_mappings__', {}
+        )
+        new_mappings: dict[str, QueryDescriptor] = {}
+
+        # Grab all annotations
+        annotations = {}
+        # TODO: we're iterating mro twice - here and down in setting if we don't already have one
+        # probably worth making this one pre-populate and draw from that later.
+        for base in reversed(cls.__mro__[:-1]):
+            if hasattr(base, '__annotations__'):
+                annotations.update(get_type_hints(base, include_extras=True))
+
         # Now add our QueryDescriptors after Pydantic is done
-        if hasattr(cls, '__annotations__'):
-            for field_name, field_type in cls.__annotations__.items():
-                if (
-                    hasattr(field_type, '__origin__')
-                    and field_type.__origin__ is QueryField
-                ):
-                    # Only add if we don't already have one
-                    if not isinstance(getattr(cls, field_name, None), QueryDescriptor):
-                        mapping = None
-                        queryfield_mappings = getattr(cls, '_queryfield_mappings', {})
+        for field_name, field_type in annotations.items():
+            if get_origin(field_type) is QueryField:
+                # Only add if we don't already have one
+                if not isinstance(getattr(cls, field_name, None), QueryDescriptor):
+                    mapping = None
+                    # Fetch from class that defined it, if any
+                    for base in cls.__mro__:
+                        queryfield_mappings = base.__dict__.get(
+                            '__queryfield_mappings__', {}
+                        )
                         if field_name in queryfield_mappings:
                             mapping = queryfield_mappings[field_name]
-                        xivapi_field = mapping.base_field if mapping else field_name
-                        setattr(
-                            cls, field_name, QueryDescriptor(field_name, xivapi_field)
-                        )
+                            break
+
+                    xivapi_field = mapping.base_field if mapping else field_name
+                    query_descriptor = QueryDescriptor(field_name, xivapi_field)
+                    new_mappings[field_name] = query_descriptor
+                    setattr(cls, field_name, query_descriptor)
+
+        # as a note, this doesn't allow field shadowing - last one overwrites.
+        cls.__querydescriptor_mappings__ = {**inherited_mappings, **new_mappings}
+
+    @classmethod
+    def get_queryfield_mappings(cls) -> dict[str, QueryDescriptor]:
+        """Returns a dict of all the fields and their corresponding mapping type."""
+        return cls.__querydescriptor_mappings__.copy()
 
     @classmethod
     def get_sheet_name(cls) -> str:
@@ -278,8 +313,8 @@ class Model(BaseModel):
                         origin = get_origin(inner_type)
                         args = get_args(inner_type)
                         is_optional = (
-                            origin is Union or type(inner_type) is types.UnionType
-                        ) and type(None) in args
+                            origin in (Union, types.UnionType) and type(None) in args
+                        )
                         if is_optional:
                             data[field_name] = None
 
