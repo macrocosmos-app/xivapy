@@ -18,10 +18,13 @@ repos:
     rev: v1.17.1
     hooks:
       - id: mypy
+        exclude: '^src/xivapy/model\.pyi$'
         additional_dependencies: [httpx, pydantic, aiostream]
         args:
           [
             --ignore-missing-imports,
-            --warn-unused-ignores,
             --warn-redundant-casts,
+            --explicit-package-bases,
+            --namespace-packages,
+            --no-site-packages,
           ]

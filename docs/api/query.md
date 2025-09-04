@@ -33,10 +33,6 @@ async for item in client.search(Item, query=query)
 | `Name="Spinning Edge" IsPvP=false` | `QueryBuilder().where(Name='Spinning Edge', IsPvP=False)`     |
 | `ItemResult.Name="Bronze Ingot"`   | `QueryBuilder().where(**{'ItemResult.Name': 'Bronze Ingot'})` |
 
-!!! note
-
-    The QueryBuilder api is still very basic, hence why the last table example shows a workaround for nested field searching. A better querying system is in planning that should feel more pythonic.
-
 
 There are also other methods that mimic `where`, but have different functionality. Let's find all ContentFinderCondition entries where the name *contains* 'coil':
 
@@ -51,6 +47,8 @@ As you can guess by now, it's all key=value entries. Here's the complete list:
 
 | QueryBuilder method              | Built output                | Description                                                                      |
 | -------------------------------- | --------------------------- | -------------------------------------------------------------------------------- |
+| `.where(Name='Coils')`           | `Name="Coils"`              | Searches for strings that exactly match (but case-insensitive) the word "Coils"  |
+| `.contains(Name='Coils')`        | `Name~"Coils"`              | Searches for strings that contain the (case-insensitive) name "Coils"            |
 | `.gt(ClassJobLevelRequired=50)`  | `ClassJobLevelRequired>50`  | Searches for items where the value is greater than the listed number             |
 | `.gte(ClassJobLevelRequired=50)` | `ClassJobLevelRequired>=50` | Searches for items where the value is greater than or equal to the listed number |
 | `.lt(ClassJobLevelRequired=50)`  | `ClassJobLevelRequired<50`  | Searches for items where the value is less than the listed number                |
@@ -163,6 +161,56 @@ Yes! This is what we want - well, except for the last two, but that's a technica
 Note that we changed `IsPvP` to *True*, but then `excluded()` it, which ends up with the same result that you're looking for here.
 
 The lesson to learn here is that query items are "or" by default, instead of an "and" (unless you mark both terms as required) - if you're treating it like an if statement with an `and`, you must use `required()`/`excluded()` on both items to get what you want.
+
+### Model-based Queries
+
+If you decide to annotate your models a bit differently, you get all the flexibility of models and the convienience of queries. Let's look at a previous example:
+
+```python
+>>> async for result in client.search(Action, query=xivapy.QueryBuilder().contains(Name='Broil').required().where(IsPvP=False).required()):
+```
+
+Let's be honest, that doesn't read very cleanly. You already wrote an `Action` model, specifically named `name` to `Name`, etc. Why not reuse that? Well, if you mark your fields with `QueryField`, you can:
+
+```python
+class Action(xivapy.Model):
+    row_id: xivapy.QueryField[int]
+    name: xivapy.QueryField[str] = xivapy.QueryField(xivapy.FieldMapping('Name'))
+    is_pvp: xivapy.QueryField[bool] = xivapy.QueryField(xivapy.FieldMapping('IsPvP'))
+
+query = xivapy.QueryBuilder().where(Action.name.contains('Broil')).required().where(Action.is_pvp == True).required()
+
+async for result in client.search(Action, query=query):
+    print(result.data)
+```
+
+That's pretty much it - write a model once, and use it for client searches, sheet fetches, querying - anything. There's, of course, caveats:
+
+1. You can only use these queries with `QueryBuilder().custom()` or `QueryBuilder().where()`
+2. These only work with `QueryField` annotations and instantiations
+
+However, the chart from before? Let's look at QueryBuilder plain methods vs the new QueryField examples:
+
+| QueryBuilder method              | QueryField                 | Built output                 |
+| -------------------------------- | -------------------------- | --------------------------- |
+| `.where(Name='Coils')`           | Foo.name == Coils          | `Name="Coils"`              |
+| `.contains(Name='Coils')`        | Foo.name.contains('Coils') | `Name~"Coils"`              |
+| `.gt(ClassJobLevelRequired=50)`  | Foo.cjl_req > 50           | `ClassJobLevelRequired>50`  |
+| `.gte(ClassJobLevelRequired=50)` | Foo.cjl_req >= 50          | `ClassJobLevelRequired>=50` |
+| `.lt(ClassJobLevelRequired=50)`  | Foo.cjl_req < 50           | `ClassJobLevelRequired<50`  |
+| `.lte(ClassJobLevelRequired=50)` | Foo.cjl_req <= 50          | `ClassJobLevelRequired<=50` |
+
+As you notice, I took some liberties and shortened the names to show how much easier it can make your life.
+
+!!! note
+
+    If you make a `FieldMapping` that has a nested field (e.g., `Content.BGM.File`), it will use that for the field name. The following are equivalent:
+
+    ```python
+    QueryBuilder().contains(**{'Content.BGM.File': 'Foo'})
+    QueryBuilder().custom(Query('Content.BGM.File', '~', 'Foo'))
+    QueryBuilder().custom(SomeModel.bgm_file.contains('Foo'))
+    ```
 
 ## Query API
 

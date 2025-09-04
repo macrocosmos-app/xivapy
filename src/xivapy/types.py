@@ -2,9 +2,10 @@
 
 from typing import Literal, TypedDict
 
-__all__ = ['Format', 'LangDict']
+__all__ = ['Format', 'LangDict', 'QueryOperators']
 
 Format = Literal['png', 'jpg', 'webp']
+QueryOperators = Literal['=', '~', '<', '<=', '>', '>=']
 
 
 class LangDict(TypedDict, total=False):

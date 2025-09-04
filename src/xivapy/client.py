@@ -491,7 +491,7 @@ class Client:
         if hasattr(rows, '__aiter__'):
             # mypy can't resolve aiostream types correctly in some cases - see upstream issue:
             # https://github.com/vxgmichel/aiostream/issues/105
-            async with chunks(rows, self.batch_size).stream() as streamer:  # type: ignore[arg-type,var-annotated]
+            async with chunks(rows, self.batch_size).stream() as streamer:  # pyright: ignore[reportArgumentType]
                 async for batch in streamer:
                     batch_seq = cast(Sequence[int], batch)
                     async for item in self._process_batch(
@@ -499,7 +499,7 @@ class Client:
                     ):
                         yield item
         else:
-            for batch in batched(rows, self.batch_size):  # type: ignore[assignment]
+            for batch in batched(rows, self.batch_size):  # pyright: ignore[reportArgumentType]
                 async for item in self._process_batch(model_class, batch, **params):
                     yield item
 
